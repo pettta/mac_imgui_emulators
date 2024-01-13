@@ -1,4 +1,3 @@
-#CXX = g++
 #CXX = clang++
 
 EXE = example_glfw_metal
