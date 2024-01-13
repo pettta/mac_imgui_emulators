@@ -9,8 +9,33 @@ void UnimplementedInstruction(State8080* state) {
     exit(1);
 }
 
+void executeInstruction(State8080* State8080){
+    unsigned char *opcode = &State8080->memory[State8080->pc];
+    switch(*opcode) {
+        case 0x00: break;
+        case 0x01: 
+            State8080->b = opcode[2];
+            State8080->c = opcode[1];
+            State8080->pc += 2;
+            break;
+        /*....*/
+        case 0x41: 
+            State8080->b = State8080->c;
+            break;
+        case 0x42:
+            State8080->b = State8080->d;
+            break;
+        case 0x43:
+            State8080->b = State8080->e;
+            break;
+    }
+}
+    
+
 void Emulate8080Op(State8080* state) {
-    unsigned char *opcode = &state->memory[state->pc];
+    // execute instruction 
+    executeInstruction(state);
+    // disassemble the next instruction 
     state->pc += Disassemble8080Op(state->memory, state->pc);
 }
 
