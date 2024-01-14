@@ -266,7 +266,226 @@ void executeInstruction(State8080* State8080){
         case 0x43: // MOV B,E
             State8080->b = State8080->e;
             break;
-        /*..TODO all the hard ones ..*/
+        case 0x44: // MOV B,H
+            State8080->b = State8080->h;
+            break;
+        case 0x45: // MOV B,L
+            State8080->b = State8080->l;
+            break;
+        case 0x46: // MOV B,M
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->b = State8080->memory[offset];
+            }
+            break;
+        case 0x47: // MOV B,A
+            State8080->b = State8080->a;
+            break;
+        case 0x48: // MOV C,B
+            State8080->c = State8080->b;
+            break;
+        case 0x49: // MOV C,C
+            // No operation
+            break;
+        case 0x4a: // MOV C,D
+            State8080->c = State8080->d;
+            break;
+        case 0x4b: // MOV C,E
+            State8080->c = State8080->e;
+            break;
+        case 0x4c: // MOV C,H
+            State8080->c = State8080->h;
+            break;
+        case 0x4d: // MOV C,L
+            State8080->c = State8080->l;
+            break;
+        case 0x4e: // MOV C,M
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->c = State8080->memory[offset];
+            }
+            break;
+        case 0x4f: // MOV C,A
+            State8080->c = State8080->a;
+            break;
+        case 0x50: // MOV D,B
+            State8080->d = State8080->b;
+            break;
+        case 0x51: // MOV D,C
+            State8080->d = State8080->c;
+            break;
+        case 0x52: // MOV D,D
+            // No operation
+            break;
+        case 0x53: // MOV D,E
+            State8080->d = State8080->e;
+            break;
+        case 0x54: // MOV D,H
+            State8080->d = State8080->h;
+            break;
+        case 0x55: // MOV D,L
+            State8080->d = State8080->l;
+            break;
+        case 0x56: // MOV D,M
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->d = State8080->memory[offset];
+            }
+            break;
+        case 0x57: // MOV D,A
+            State8080->d = State8080->a;
+            break;
+        case 0x58: // MOV E,B
+            State8080->e = State8080->b;
+            break;
+        case 0x59: // MOV E,C
+            State8080->e = State8080->c;
+            break;
+        case 0x5a: // MOV E,D
+            State8080->e = State8080->d;
+            break;
+        case 0x5b: // MOV E,E
+            // No operation
+            break;
+        case 0x5c: // MOV E,H
+            State8080->e = State8080->h;
+            break;
+        case 0x5d: // MOV E,L
+            State8080->e = State8080->l;
+            break;
+        case 0x5e: // MOV E,M
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->e = State8080->memory[offset];
+            }
+            break;
+        case 0x5f: // MOV E,A
+            State8080->e = State8080->a;
+            break;
+        case 0x60: // MOV H,B
+            State8080->h = State8080->b;
+            break;
+        case 0x61: // MOV H,C
+            State8080->h = State8080->c;
+            break;
+        case 0x62: // MOV H,D
+            State8080->h = State8080->d;
+            break;
+        case 0x63: // MOV H,E
+            State8080->h = State8080->e;
+            break;
+        case 0x64: // MOV H,H
+            // No operation
+            break;
+        case 0x65: // MOV H,L
+            State8080->h = State8080->l;
+            break;
+        case 0x66: // MOV H,M
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->h = State8080->memory[offset];
+            }
+            break;
+        case 0x67: // MOV H,A
+            State8080->h = State8080->a;
+            break;
+        case 0x68: // MOV L,B
+            State8080->l = State8080->b;
+            break;
+        case 0x69: // MOV L,C
+            State8080->l = State8080->c;
+            break;
+        case 0x6a: // MOV L,D
+            State8080->l = State8080->d;
+            break;
+        case 0x6b: // MOV L,E
+            State8080->l = State8080->e;
+            break;
+        case 0x6c: // MOV L,H
+            State8080->l = State8080->h;
+            break;
+        case 0x6d: // MOV L,L
+            // No operation
+            break;
+        case 0x6e: // MOV L,M
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->l = State8080->memory[offset];
+            }
+            break;
+        case 0x6f: // MOV L,A
+            State8080->l = State8080->a;
+            break;
+        case 0x70: // MOV M,B
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->memory[offset] = State8080->b;
+            }
+            break;
+        case 0x71: // MOV M,C
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->memory[offset] = State8080->c;
+            }
+            break;
+        case 0x72: // MOV M,D
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->memory[offset] = State8080->d;
+            }
+            break; 
+        case 0x73: // MOV M,E
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->memory[offset] = State8080->e;
+            }
+            break; 
+        case 0x74: // MOV M,H
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->memory[offset] = State8080->h;
+            }
+            break;
+        case 0x75: // MOV M,L
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->memory[offset] = State8080->l;
+            }
+            break;
+        // TODO case 0x76 special case HLT
+        case 0x77: // MOV M,A
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->memory[offset] = State8080->a;
+            }
+            break;
+        case 0x78: // MOV A,B
+            State8080->a = State8080->b;
+            break;
+        case 0x79: // MOV A,C
+            State8080->a = State8080->c;
+            break;
+        case 0x7a: // MOV A,D
+            State8080->a = State8080->d;
+            break;
+        case 0x7b: // MOV A,E
+            State8080->a = State8080->e;
+            break;
+        case 0x7c: // MOV A,H
+            State8080->a = State8080->h;
+            break;
+        case 0x7d: // MOV A,L
+            State8080->a = State8080->l;
+            break;
+        case 0x7e: // MOV A,M
+            {
+                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                State8080->a = State8080->memory[offset];
+            }
+            break;
+        case 0x7f: // MOV A,A
+            // No operation
+            break;
         // Begin Arithmetic Instructions
         // Addition 
         case 0x80: // ADD B
