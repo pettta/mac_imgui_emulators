@@ -9,6 +9,15 @@ void UnimplementedInstruction(State8080* state) {
     exit(1);
 }
 
+u_int8_t parity(int x) {
+    int parity = 0;
+    while (x) {
+        parity = !parity;
+        x = x & (x-1);
+    }
+    return parity;
+}
+
 void executeInstruction(State8080* State8080){
     unsigned char *opcode = &State8080->memory[State8080->pc];
     switch(*opcode) {

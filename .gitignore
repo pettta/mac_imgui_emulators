@@ -8,3 +8,4 @@ imgui_impl_metal.o
 imgui_mac_test.o
 imgui_tables.o
 imgui.ini
+.vscode 
