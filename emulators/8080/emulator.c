@@ -787,7 +787,20 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
-        /* TODO a bunch of logical operations */
+        /* TODO 0xa1 through 0xc1 */
+        case 0xc2: // JNZ address 
+            {
+                if(State8080->cc.z == 0){
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2; 
+                }
+            }
+            break;
+        case 0xc3: // JMP address
+            State8080->pc = (opcode[2] << 8 ) | opcode[1];
+            break; 
+        // TODO 0xc4-c5
         case 0xc6: // ADI byte 
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) opcode[1];
@@ -798,7 +811,16 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
-        /* TODO more */
+        /* TODO 0xc7-c9 */
+        case 0xca: // JZ adr 
+            {
+                if(State8080->cc.z == 1){
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+        // TODO 0xcb-0xcd
         case 0xce: // ACI byte 
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) opcode[1] + (uint16_t) State8080->cc.cy;
@@ -809,7 +831,16 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
-        /* TODO more*/
+        /* TODO 0xcf-d1*/
+        case 0xd2: // JNC adr 
+            {
+                if (State8080->cc.cy == 0){
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+        /* TODO 0xd0-d5*/
         case 0xd6: // SUI byte
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) opcode[1];
@@ -820,7 +851,16 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
-        /* TODO more*/
+        /* TODO 0xd7-d9*/
+        case 0xda: // JC ADR
+            {
+                if(State8080->cc.cy == 1){
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+        /* TODO 0xdb-dd */
         case 0xde: // SBI byte
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) opcode[1] - (uint16_t) State8080->cc.cy;
@@ -831,8 +871,47 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
-        /* TODO more*/
+        /* TODO 0xdf-0xe1*/
+        case 0xe2: // JPO ADR 
+            {
+                if(State8080->cc.p == 0){
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
             break;
+        /* TODO 0xe3-0xe9*/
+        case 0xea: // JPE ADR 
+            {
+                if(State8080->cc.p == 1){
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+            break;
+        /* TODO 0xeb - 0xf1*/
+        case 0xf2: // JP ADR 
+            {
+                if(State8080->cc.s == 0){
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+            break;
+        /* TODO 0xf3 - 0xf9 */
+        case 0xfa: // JM ADR 
+            {
+                if(State8080->cc.s == 1){
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+            break;
+        /* TODO 0xfb - 0xff */
     }
 }
     
