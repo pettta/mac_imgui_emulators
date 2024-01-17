@@ -19,7 +19,10 @@ u_int8_t parity(int x) {
 }
 
 
-// TODO at some point pull arithmetic common functionalitys into functions, that take state and answer as params 
+// TODO at some point pull arithmetic common functionalitys into functions
+// that take state and answer as params 
+// For example, all add instructions have some common add, then you build 
+// on that for the variants with flags, this is true of other things like CALL, RET, etc 
 
 void executeInstruction(State8080* State8080){
     unsigned char *opcode = &State8080->memory[State8080->pc];
@@ -787,7 +790,18 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
-        /* TODO 0xa1 through 0xc1 */
+        /* TODO 0xa1 through 0xbf */
+        case 0xc0: // RNZ
+            {
+                if(State8080->cc.z == 0){
+                    State8080->pc = State8080->memory[State8080->sp] | (State8080->memory[State8080->sp+1] << 8);
+                    State8080->sp += 2;
+                }else{
+                    State8080->pc++;
+                }
+            }
+            break;
+        // TODO 0xc1 
         case 0xc2: // JNZ address 
             {
                 if(State8080->cc.z == 0){
@@ -800,7 +814,20 @@ void executeInstruction(State8080* State8080){
         case 0xc3: // JMP address
             State8080->pc = (opcode[2] << 8 ) | opcode[1];
             break; 
-        // TODO 0xc4-c5
+        case 0xc4: // CNZ address
+            {
+                if(State8080->cc.z == 0){
+                    uint16_t ret = State8080->pc + 2;
+                    State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                    State8080->memory[State8080->sp-2] = (ret & 0xff);
+                    State8080->sp = State8080->sp - 2;
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+            break;
+        // TODO 0xc5
         case 0xc6: // ADI byte 
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) opcode[1];
@@ -811,7 +838,29 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
-        /* TODO 0xc7-c9 */
+        case 0xc7: // RST 0 
+            {
+                uint16_t ret = State8080->pc;
+                State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                State8080->memory[State8080->sp-2] = (ret & 0xff);
+                State8080->sp = State8080->sp - 2;
+                State8080->pc = 0;
+            }
+            break;
+        case 0xc8: // RZ 
+            {
+                if(State8080->cc.z == 1){
+                    State8080->pc = State8080->memory[State8080->sp] | (State8080->memory[State8080->sp+1] << 8);
+                    State8080->sp += 2;
+                }else{
+                    State8080->pc++;
+                }
+            }
+            break;
+        case 0xc9: // RET 
+                State8080->pc = State8080->memory[State8080->sp] | (State8080->memory[State8080->sp+1] << 8);
+                State8080->sp += 2;
+                break; 
         case 0xca: // JZ adr 
             {
                 if(State8080->cc.z == 1){
@@ -820,7 +869,29 @@ void executeInstruction(State8080* State8080){
                     State8080->pc += 2;
                 }
             }
-        // TODO 0xcb-0xcd
+        // TODO 0xcb-0xcb
+        case 0xcc: // CZ adr 
+            {
+                if(State8080->cc.z == 1){
+                    uint16_t ret = State8080->pc + 2;
+                    State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                    State8080->memory[State8080->sp-2] = (ret & 0xff);
+                    State8080->sp = State8080->sp - 2;
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+            break;
+        case 0xcd: //CALL adr 
+            {
+                uint16_t ret = State8080->pc + 2;
+                State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                State8080->memory[State8080->sp-2] = (ret & 0xff);
+                State8080->sp = State8080->sp - 2;
+                State8080->pc = (opcode[2] << 8) | opcode[1];
+            }
+            break;
         case 0xce: // ACI byte 
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) opcode[1] + (uint16_t) State8080->cc.cy;
@@ -831,7 +902,25 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
-        /* TODO 0xcf-d1*/
+        case 0xcf: // RST 1 
+            {
+                uint16_t ret = State8080->pc;
+                State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                State8080->memory[State8080->sp-2] = (ret & 0xff);
+                State8080->sp = State8080->sp - 2;
+                State8080->pc = 0x8;
+            }
+            break;
+        case 0xd0: // RNC 
+            {
+                if(State8080->cc.cy == 0){
+                    State8080->pc = State8080->memory[State8080->sp] | (State8080->memory[State8080->sp+1] << 8);
+                    State8080->sp += 2;
+                }else{
+                    State8080->pc++;
+                }
+            }
+        // TODO 0xd1
         case 0xd2: // JNC adr 
             {
                 if (State8080->cc.cy == 0){
@@ -840,7 +929,20 @@ void executeInstruction(State8080* State8080){
                     State8080->pc += 2;
                 }
             }
-        /* TODO 0xd0-d5*/
+        /* TODO 0xd0-d3*/
+        case 0xd4: // CNC adr 
+            {
+                if(State8080->cc.cy == 0){
+                    uint16_t ret = State8080->pc + 2;
+                    State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                    State8080->memory[State8080->sp-2] = (ret & 0xff);
+                    State8080->sp = State8080->sp - 2;
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+        // TODO 0xd5
         case 0xd6: // SUI byte
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) opcode[1];
@@ -851,7 +953,25 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
-        /* TODO 0xd7-d9*/
+        case 0xd7: // RST 2 
+            {
+                uint16_t ret = State8080->pc;
+                State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                State8080->memory[State8080->sp-2] = (ret & 0xff);
+                State8080->sp = State8080->sp - 2;
+                State8080->pc = 0x10;
+            }
+            break;
+        case 0xd8: // RC 
+            {
+                if(State8080->cc.cy == 1){
+                    State8080->pc = State8080->memory[State8080->sp] | (State8080->memory[State8080->sp+1] << 8);
+                    State8080->sp += 2;
+                }else{
+                    State8080->pc++;
+                }
+            }
+        // TODO 0xd9
         case 0xda: // JC ADR
             {
                 if(State8080->cc.cy == 1){
@@ -860,7 +980,20 @@ void executeInstruction(State8080* State8080){
                     State8080->pc += 2;
                 }
             }
-        /* TODO 0xdb-dd */
+        /* TODO 0xdb*/
+        case 0xdc: // CC ADR
+            {
+                if(State8080->cc.cy == 1){
+                    uint16_t ret = State8080->pc + 2;
+                    State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                    State8080->memory[State8080->sp-2] = (ret & 0xff);
+                    State8080->sp = State8080->sp - 2;
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+        // TODO 0xdd 
         case 0xde: // SBI byte
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) opcode[1] - (uint16_t) State8080->cc.cy;
@@ -871,7 +1004,25 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
-        /* TODO 0xdf-0xe1*/
+        case 0xdf: // RST 3 
+            {
+                uint16_t ret = State8080->pc;
+                State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                State8080->memory[State8080->sp-2] = (ret & 0xff);
+                State8080->sp = State8080->sp - 2;
+                State8080->pc = 0x18;
+            }
+            break;
+        case 0xe0: // RPO 
+            {
+                if(State8080->cc.p == 0){
+                    State8080->pc = State8080->memory[State8080->sp] | (State8080->memory[State8080->sp+1] << 8);
+                    State8080->sp += 2;
+                }else{
+                    State8080->pc++;
+                }
+            }
+        // TODO 0xe1
         case 0xe2: // JPO ADR 
             {
                 if(State8080->cc.p == 0){
@@ -881,7 +1032,45 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        /* TODO 0xe3-0xe9*/
+        /* TODO 0xe3 */
+        case 0xe4: // CPO ADR 
+            {
+                if(State8080->cc.p == 0){
+                    uint16_t ret = State8080->pc + 2;
+                    State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                    State8080->memory[State8080->sp-2] = (ret & 0xff);
+                    State8080->sp = State8080->sp - 2;
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+            break;
+        // TODO 0xe5-0xe6
+        case 0xe7: // RST 4 
+            {
+                uint16_t ret = State8080->pc;
+                State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                State8080->memory[State8080->sp-2] = (ret & 0xff);
+                State8080->sp = State8080->sp - 2;
+                State8080->pc = 0x20;
+            }
+            break;
+        case 0xe8: // RPE 
+            {
+                if(State8080->cc.p == 1){
+                    State8080->pc = State8080->memory[State8080->sp] | (State8080->memory[State8080->sp+1] << 8);
+                    State8080->sp += 2;
+                }else{
+                    State8080->pc++;
+                }
+            }
+            break;
+        case 0xe9: // PCHL 
+            {
+                State8080->pc = (State8080->h << 8) | State8080->l;
+            }
+            break;
         case 0xea: // JPE ADR 
             {
                 if(State8080->cc.p == 1){
@@ -891,7 +1080,41 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        /* TODO 0xeb - 0xf1*/
+        /* TODO 0xeb*/
+        case 0xec: // CPE ADR 
+            {
+                if(State8080->cc.p == 1){
+                    uint16_t ret = State8080->pc + 2;
+                    State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                    State8080->memory[State8080->sp-2] = (ret & 0xff);
+                    State8080->sp = State8080->sp - 2;
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+            break;
+        // TODO 0xed - 0xee
+        case 0xef: // RST 5 
+            {
+                uint16_t ret = State8080->pc;
+                State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                State8080->memory[State8080->sp-2] = (ret & 0xff);
+                State8080->sp = State8080->sp - 2;
+                State8080->pc = 0x28;
+            }
+            break;
+        case 0xf0: // RP 
+            {
+                if(State8080->cc.s == 0){
+                    State8080->pc = State8080->memory[State8080->sp] | (State8080->memory[State8080->sp+1] << 8);
+                    State8080->sp += 2;
+                }else{
+                    State8080->pc++;
+                }
+            }
+            break;
+        // TODO 0xf1 
         case 0xf2: // JP ADR 
             {
                 if(State8080->cc.s == 0){
@@ -901,7 +1124,41 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        /* TODO 0xf3 - 0xf9 */
+        /* TODO 0xf3 */
+        case 0xf4: // CP ADR 
+            {
+                if(State8080->cc.s == 0){
+                    uint16_t ret = State8080->pc + 2;
+                    State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                    State8080->memory[State8080->sp-2] = (ret & 0xff);
+                    State8080->sp = State8080->sp - 2;
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+            break;
+        // TODO 0xf5-0xf6
+        case 0xf7: // RST 6
+            {
+                uint16_t ret = State8080->pc;
+                State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                State8080->memory[State8080->sp-2] = (ret & 0xff);
+                State8080->sp = State8080->sp - 2;
+                State8080->pc = 0x30;
+            }
+            break;
+        case 0xf8: // RM 
+            {
+                if(State8080->cc.s == 1){
+                    State8080->pc = State8080->memory[State8080->sp] | (State8080->memory[State8080->sp+1] << 8);
+                    State8080->sp += 2;
+                }else{
+                    State8080->pc++;
+                }
+            }
+            break;
+        // TODO 0xf9
         case 0xfa: // JM ADR 
             {
                 if(State8080->cc.s == 1){
@@ -911,7 +1168,30 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        /* TODO 0xfb - 0xff */
+        /* TODO 0xfb*/
+        case 0xfc: // CM ADR 
+            {
+                if(State8080->cc.s == 1){
+                    uint16_t ret = State8080->pc + 2;
+                    State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                    State8080->memory[State8080->sp-2] = (ret & 0xff);
+                    State8080->sp = State8080->sp - 2;
+                    State8080->pc = (opcode[2] << 8) | opcode[1];
+                }else{
+                    State8080->pc += 2;
+                }
+            }
+            break;
+        // TODO 0xfd- 0xfe
+        case 0xff: // RST 7 
+            {
+                uint16_t ret = State8080->pc;
+                State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
+                State8080->memory[State8080->sp-2] = (ret & 0xff);
+                State8080->sp = State8080->sp - 2;
+                State8080->pc = 0x38;
+            }
+            break;
     }
 }
     
