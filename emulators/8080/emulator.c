@@ -41,6 +41,7 @@ void executeInstruction(State8080* State8080){
                 State8080->b = (bc & 0xff00) >> 8;
                 State8080->c = (bc & 0xff);
             }
+            break;
         case 0x04: // INR B
             {
                 uint16_t answer = (uint16_t) State8080->b + (uint16_t) 1;
@@ -49,6 +50,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->b = answer & 0xff;
             }
+            break;
         case 0x05: // DCR B
             {
                 uint16_t answer = (uint16_t) State8080->b - (uint16_t) 1;
@@ -57,6 +59,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->b = answer & 0xff;
             }
+            break;
         // TODO 0x06 - 08 
         case 0x09: // DAD B
             {
@@ -67,11 +70,13 @@ void executeInstruction(State8080* State8080){
                 State8080->l = (answer & 0xff);
                 State8080->cc.cy = (answer > 0xffff);
             }
+            break;
         case 0x0a: // LDAX B
             {
                 uint16_t offset = (uint16_t) (State8080->b << 8) | (uint16_t) (State8080->c);
                 State8080->a = State8080->memory[offset];
             }
+            break;
         case 0x0b: // DCX B
             {
                 uint16_t bc = (uint16_t) State8080->b << 8 | (uint16_t) State8080->c;
@@ -79,6 +84,7 @@ void executeInstruction(State8080* State8080){
                 State8080->b = (bc & 0xff00) >> 8;
                 State8080->c = (bc & 0xff);
             }
+            break;
         case 0x0c: // INR C
             {
                 uint16_t answer = (uint16_t) State8080->c + (uint16_t) 1;
@@ -87,6 +93,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->c = answer & 0xff;
             }
+            break;
         case 0x0d: // DCR C
             {
                 uint16_t answer = (uint16_t) State8080->c - (uint16_t) 1;
@@ -95,6 +102,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->c = answer & 0xff;
             }
+            break;
         // TODO 0x0e - 0x12
         case 0x13: // INX D
             {
@@ -103,6 +111,7 @@ void executeInstruction(State8080* State8080){
                 State8080->d = (de & 0xff00) >> 8;
                 State8080->e = (de & 0xff);
             }
+            break;
         case 0x14: // INR D
             {
                 uint16_t answer = (uint16_t) State8080->d + (uint16_t) 1;
@@ -111,6 +120,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->d = answer & 0xff;
             }
+            break;
         case 0x15: // DCR D
             {
                 uint16_t answer = (uint16_t) State8080->d - (uint16_t) 1;
@@ -119,12 +129,14 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->d = answer & 0xff;
             }
+            break;
         // TODO 0x16 - 0x19
         case 0x1a: // LDAX D
             {
                 uint16_t offset = (uint16_t) (State8080->d << 8) | (uint16_t) (State8080->e);
                 State8080->a = State8080->memory[offset];
             }
+            break;
         case 0x1b: // DCX D
             {
                 uint16_t de = (uint16_t) State8080->d << 8 | (uint16_t) State8080->e;
@@ -132,6 +144,7 @@ void executeInstruction(State8080* State8080){
                 State8080->d = (de & 0xff00) >> 8;
                 State8080->e = (de & 0xff);
             }
+            break;
         case 0x1c: // INR E
             {
                 uint16_t answer = (uint16_t) State8080->e + (uint16_t) 1;
@@ -140,6 +153,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->e = answer & 0xff;
             }
+            break;
         case 0x1d: // DCR E
             {
                 uint16_t answer = (uint16_t) State8080->e - (uint16_t) 1;
@@ -148,6 +162,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->e = answer & 0xff;
             }
+            break;
         // TODO 0x1e - 0x22
         case 0x23: // INX H
             {
@@ -156,6 +171,7 @@ void executeInstruction(State8080* State8080){
                 State8080->h = (hl & 0xff00) >> 8;
                 State8080->l = (hl & 0xff);
             }
+            break;
         case 0x24: // INR H
             {
                 uint16_t answer = (uint16_t) State8080->h + (uint16_t) 1;
@@ -164,6 +180,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->h = answer & 0xff;
             }
+            break;
         case 0x25: // DCR H
             {
                 uint16_t answer = (uint16_t) State8080->h - (uint16_t) 1;
@@ -172,6 +189,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->h = answer & 0xff;
             }
+            break;
         // TODO 0x26 - 0x28
         case 0x29: // DAD H
             {
@@ -181,6 +199,7 @@ void executeInstruction(State8080* State8080){
                 State8080->l = (answer & 0xff);
                 State8080->cc.cy = (answer > 0xffff);
             }
+            break;
         // TODO 0x2a
         case 0x2b: // DCX H
             {
@@ -189,6 +208,7 @@ void executeInstruction(State8080* State8080){
                 State8080->h = (hl & 0xff00) >> 8;
                 State8080->l = (hl & 0xff);
             }
+            break;
         case 0x2c: // INR L
             {
                 uint16_t answer = (uint16_t) State8080->l + (uint16_t) 1;
@@ -197,6 +217,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->l = answer & 0xff;
             }
+            break;
         case 0x2d: // DCR L
             {
                 uint16_t answer = (uint16_t) State8080->l - (uint16_t) 1;
@@ -205,11 +226,13 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->l = answer & 0xff;
             }
+            break;
         // TODO 0x2e - 0x32
         case 0x33: // INX SP
             {
                 State8080->sp++;
             }
+            break;
         case 0x34: // INR M
             {
                 uint16_t offset = (uint16_t) (State8080->h << 8) | (uint16_t) (State8080->l);
@@ -219,6 +242,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->memory[offset] = answer & 0xff;
             }
+            break;
         case 0x35: // DCR M
             {
                 uint16_t offset = (uint16_t) (State8080->h << 8) | (uint16_t) (State8080->l);
@@ -228,6 +252,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->memory[offset] = answer & 0xff;
             }
+            break;
         // TODO 0x36 - 0x38
         case 0x39: // DAD SP
             {
@@ -237,12 +262,14 @@ void executeInstruction(State8080* State8080){
                 State8080->l = (answer & 0xff);
                 State8080->cc.cy = (answer > 0xffff);
             }
+            break;
         
         // TODO 0x3a
         case 0x3b: // DCX SP
             {
                 State8080->sp--;
             }
+            break;
         case 0x3c: // INR A
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) 1;
@@ -251,6 +278,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x3d: // DCR A
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) 1;
@@ -259,6 +287,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         // TODO 0x3e - 0x3f
         case 0x41:  // MOV B,C
             State8080->b = State8080->c;
@@ -504,6 +533,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x81: // ADD C
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->c;
@@ -513,6 +543,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x82: // ADD D
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->d;
@@ -522,6 +553,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x83: // ADD E
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->e;
@@ -531,6 +563,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x84: // ADD H
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->h;
@@ -540,6 +573,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x85: // ADD L
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->l;
@@ -549,6 +583,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x86: // ADD M
             {
                 uint16_t offset = (uint16_t) (State8080->h << 8) | (uint16_t) (State8080->l);
@@ -559,6 +594,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x87: // ADD A
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->a;
@@ -568,6 +604,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         // Carry variants 
         case 0x88: // ADC B
             {
@@ -578,6 +615,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x89: // ADC C
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->c + (uint16_t) State8080->cc.cy;
@@ -587,6 +625,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x8a: // ADC D
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->d + (uint16_t) State8080->cc.cy;
@@ -596,6 +635,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x8b: // ADC E
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->e + (uint16_t) State8080->cc.cy;
@@ -605,6 +645,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x8c: // ADC H
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->h + (uint16_t) State8080->cc.cy;
@@ -614,6 +655,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x8d: // ADC L
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->l + (uint16_t) State8080->cc.cy;
@@ -623,6 +665,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x8e: // ADC M
             {
                 uint16_t offset = (uint16_t) (State8080->h << 8) | (uint16_t) (State8080->l);
@@ -633,6 +676,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x8f: // ADC A
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->a + (uint16_t) State8080->cc.cy;
@@ -642,6 +686,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         // Subtraction
         case 0x90: // SUB B
             {
@@ -652,6 +697,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x91: // SUB C
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->c;
@@ -661,6 +707,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x92: // SUB D
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->d;
@@ -670,6 +717,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x93: // SUB E
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->e;
@@ -679,6 +727,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x94: // SUB H
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->h;
@@ -688,6 +737,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x95: // SUB L
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->l;
@@ -697,6 +747,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x96: // SUB M
             {
                 uint16_t offset = (uint16_t) (State8080->h << 8) | (uint16_t) (State8080->l);
@@ -707,6 +758,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x97: // SUB A
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->a;
@@ -716,6 +768,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         // SBB
         case 0x98: // SBB B
             {
@@ -726,6 +779,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x99: // SBB C
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->c - (uint16_t) State8080->cc.cy;
@@ -735,6 +789,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x9a: // SBB D
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->d - (uint16_t) State8080->cc.cy;
@@ -744,6 +799,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x9b: // SBB E
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->e - (uint16_t) State8080->cc.cy;
@@ -753,6 +809,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x9c: // SBB H
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->h - (uint16_t) State8080->cc.cy;
@@ -762,6 +819,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x9d: // SBB L
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->l - (uint16_t) State8080->cc.cy;
@@ -771,6 +829,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x9e: // SBB M
             {
                 uint16_t offset = (uint16_t) (State8080->h << 8) | (uint16_t) (State8080->l);
@@ -781,6 +840,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         case 0x9f: // SBB A
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) State8080->a - (uint16_t) State8080->cc.cy;
@@ -790,6 +850,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.p = parity(answer&0xff);
                 State8080->a = answer & 0xff;
             }
+            break;
         /* TODO 0xa1 through 0xbf */
         case 0xc0: // RNZ
             {
@@ -838,6 +899,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
+            break;
         case 0xc7: // RST 0 
             {
                 uint16_t ret = State8080->pc;
@@ -869,6 +931,7 @@ void executeInstruction(State8080* State8080){
                     State8080->pc += 2;
                 }
             }
+            break;
         // TODO 0xcb-0xcb
         case 0xcc: // CZ adr 
             {
@@ -902,6 +965,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
+            break;
         case 0xcf: // RST 1 
             {
                 uint16_t ret = State8080->pc;
@@ -920,6 +984,7 @@ void executeInstruction(State8080* State8080){
                     State8080->pc++;
                 }
             }
+            break;
         // TODO 0xd1
         case 0xd2: // JNC adr 
             {
@@ -929,6 +994,7 @@ void executeInstruction(State8080* State8080){
                     State8080->pc += 2;
                 }
             }
+            break;
         /* TODO 0xd0-d3*/
         case 0xd4: // CNC adr 
             {
@@ -942,6 +1008,7 @@ void executeInstruction(State8080* State8080){
                     State8080->pc += 2;
                 }
             }
+            break;
         // TODO 0xd5
         case 0xd6: // SUI byte
             {
@@ -953,6 +1020,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
+            break;
         case 0xd7: // RST 2 
             {
                 uint16_t ret = State8080->pc;
@@ -971,6 +1039,7 @@ void executeInstruction(State8080* State8080){
                     State8080->pc++;
                 }
             }
+            break;
         // TODO 0xd9
         case 0xda: // JC ADR
             {
@@ -980,6 +1049,7 @@ void executeInstruction(State8080* State8080){
                     State8080->pc += 2;
                 }
             }
+            break;
         /* TODO 0xdb*/
         case 0xdc: // CC ADR
             {
@@ -993,6 +1063,7 @@ void executeInstruction(State8080* State8080){
                     State8080->pc += 2;
                 }
             }
+            break;
         // TODO 0xdd 
         case 0xde: // SBI byte
             {
@@ -1004,6 +1075,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
+            break;
         case 0xdf: // RST 3 
             {
                 uint16_t ret = State8080->pc;
@@ -1022,6 +1094,7 @@ void executeInstruction(State8080* State8080){
                     State8080->pc++;
                 }
             }
+            break;
         // TODO 0xe1
         case 0xe2: // JPO ADR 
             {
