@@ -3,12 +3,6 @@
 #include <string.h>
 #include "disassembler.h"
 
-void UnimplementedInstruction(State8080* state) {
-    // pc will have advanced one, so undo that
-    printf ("Error: Unimplemented instruction\n");
-    exit(1);
-}
-
 u_int8_t parity(int x) {
     int parity = 0;
     while (x) {
@@ -18,7 +12,14 @@ u_int8_t parity(int x) {
     return parity;
 }
 
-
+void UnimplementedInstruction(State8080* state) {
+    // pc will have advanced one, so undo that
+    printf ("Error: Unimplemented instruction\n");
+    state->pc--;
+    Disassemble8080Op(state->memory, state->pc);
+    printf("\n");
+    exit(1);
+}
 // TODO at some point pull arithmetic common functionalitys into functions
 // that take state and answer as params 
 // For example, all add instructions have some common add, then you build 
@@ -33,7 +34,7 @@ void executeInstruction(State8080* State8080){
             State8080->c = opcode[1];
             State8080->pc += 2;
             break;
-        // TODO 0x02 
+        case 0x02: UnimplementedInstruction(State8080); break;
         case 0x03: // INX B
             {
                 uint16_t bc = (uint16_t) State8080->b << 8 | (uint16_t) State8080->c;
@@ -54,13 +55,18 @@ void executeInstruction(State8080* State8080){
         case 0x05: // DCR B
             {
                 uint16_t answer = (uint16_t) State8080->b - (uint16_t) 1;
-                State8080->cc.z = ((answer & 0xff) == 0);
-                State8080->cc.s = ((answer & 0x80) != 0);
+                State8080->cc.z = (answer == 0);
+                State8080->cc.s = ((answer & 0x80) == 0x80);
                 State8080->cc.p = parity(answer&0xff);
-                State8080->b = answer & 0xff;
+                State8080->b = answer;
             }
             break;
-        // TODO 0x06 - 08 
+        case 0x06: // MVI B,byte
+            State8080->b = opcode[1];
+            State8080->pc++;
+            break;
+        case 0x07: UnimplementedInstruction(State8080); break;
+        case 0x08: UnimplementedInstruction(State8080); break;
         case 0x09: // DAD B
             {
                 uint32_t hl = (uint32_t) State8080->h << 8 | (uint32_t) State8080->l;
@@ -103,7 +109,10 @@ void executeInstruction(State8080* State8080){
                 State8080->c = answer & 0xff;
             }
             break;
-        // TODO 0x0e
+        case 0x0e: // MVI C,byte
+            State8080->c = opcode[1];
+            State8080->pc++;
+            break;
         case 0x0f: // RRC
             {
                 uint8_t x = State8080->a;
@@ -111,13 +120,19 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.cy = (1 == (x&1));
             }
             break;
-        // TODO 0x10-0x12
+        case 0x10: UnimplementedInstruction(State8080); break;
+        case 0x11: // LXI D,word
+            State8080->d = opcode[2];
+            State8080->e = opcode[1];
+            State8080->pc += 2;
+            break;
+        case 0x12: UnimplementedInstruction(State8080); break;
         case 0x13: // INX D
             {
-                uint16_t de = (uint16_t) State8080->d << 8 | (uint16_t) State8080->e;
-                de++;
-                State8080->d = (de & 0xff00) >> 8;
-                State8080->e = (de & 0xff);
+                State8080->e++;
+                if (State8080->e == 0) {
+                    State8080->d++;
+                }
             }
             break;
         case 0x14: // INR D
@@ -138,7 +153,10 @@ void executeInstruction(State8080* State8080){
                 State8080->d = answer & 0xff;
             }
             break;
-        // TODO 0x16 
+        case 0x16: // MVI D,byte
+            State8080->d = opcode[1];
+            State8080->pc++;
+            break;
         case 0x17: // RAL
             {
                 uint8_t x = State8080->a;
@@ -146,7 +164,17 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.cy = (1 == (x&1));
             }
             break;
-        // TODO 0x18-0x19
+        case 0x18: UnimplementedInstruction(State8080); break;
+        case 0x19: // DAD D
+            {
+                uint32_t hl = (uint32_t) State8080->h << 8 | (uint32_t) State8080->l;
+                uint32_t de = (uint32_t) State8080->d << 8 | (uint32_t) State8080->e;
+                uint32_t answer = hl + de;
+                State8080->h = (answer & 0xff00) >> 8;
+                State8080->l = (answer & 0xff);
+                State8080->cc.cy = (answer > 0xffff);
+            }
+            break;
         case 0x1a: // LDAX D
             {
                 uint16_t offset = (uint16_t) (State8080->d << 8) | (uint16_t) (State8080->e);
@@ -179,7 +207,10 @@ void executeInstruction(State8080* State8080){
                 State8080->e = answer & 0xff;
             }
             break;
-        // TODO 0x1e
+        case 0x1e: // MVI E,byte
+            State8080->e = opcode[1];
+            State8080->pc++;
+            break;
         case 0x1f: // RAR
             {
                 uint8_t x = State8080->a;
@@ -187,13 +218,19 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.cy = (1 == (x&1));
             }
             break; 
-        // TODO 0x20-0x22
-        case 0x23: // INX H
+        case 0x20: UnimplementedInstruction(State8080); break;
+        case 0x21: // LXI H,word
+            State8080->h = opcode[2];
+            State8080->l = opcode[1];
+            State8080->pc += 2;
+            break;
+        case 0x22: UnimplementedInstruction(State8080); break;
+        case 0x23: // INX H NOTE: could be issue, come back if still broke 
             {
-                uint16_t hl = (uint16_t) State8080->h << 8 | (uint16_t) State8080->l;
-                hl++;
-                State8080->h = (hl & 0xff00) >> 8;
-                State8080->l = (hl & 0xff);
+                State8080->l++;
+                if (State8080->l == 0) {
+                    State8080->h++;
+                }
             }
             break;
         case 0x24: // INR H
@@ -214,7 +251,12 @@ void executeInstruction(State8080* State8080){
                 State8080->h = answer & 0xff;
             }
             break;
-        // TODO 0x26 - 0x28
+        case 0x26: // MVI H,byte
+            State8080->h = opcode[1];
+            State8080->pc++;
+            break;
+        case 0x27: UnimplementedInstruction(State8080); break;
+        case 0x28: UnimplementedInstruction(State8080); break;
         case 0x29: // DAD H
             {
                 uint32_t hl = (uint32_t) State8080->h << 8 | (uint32_t) State8080->l;
@@ -224,7 +266,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.cy = (answer > 0xffff);
             }
             break;
-        // TODO 0x2a
+        case 0x2a: UnimplementedInstruction(State8080); break;
         case 0x2b: // DCX H
             {
                 uint16_t hl = (uint16_t) State8080->h << 8 | (uint16_t) State8080->l;
@@ -251,13 +293,27 @@ void executeInstruction(State8080* State8080){
                 State8080->l = answer & 0xff;
             }
             break;
-        //TODO 0x2e
+        case 0x2e: // MVI L,byte
+            State8080->l = opcode[1];
+            State8080->pc++;
+            break;
         case 0x2f: // CMA
             {
                 State8080->a = ~State8080->a;
             }
             break;
-        //TODO 0x30-0x32 
+        case 0x30: UnimplementedInstruction(State8080); break;
+        case 0x31: // LXI SP,word
+            State8080->sp = (opcode[2] << 8) | opcode[1];
+            State8080->pc += 2;
+            break;
+        case 0x32: // STA adr
+            {
+                uint16_t offset = (opcode[2] << 8) | (opcode[1]);
+                State8080->memory[offset] = State8080->a;
+                State8080->pc += 2;
+            }
+            break;
         case 0x33: // INX SP
             {
                 State8080->sp++;
@@ -283,13 +339,19 @@ void executeInstruction(State8080* State8080){
                 State8080->memory[offset] = answer & 0xff;
             }
             break;
-        // TODO 0x36
+        case 0x36: // MVI M,byte
+            {
+                uint16_t offset = (uint16_t) (State8080->h << 8) | (uint16_t) (State8080->l);
+                State8080->memory[offset] = opcode[1];
+                State8080->pc++;
+            }
+            break;
         case 0x37: // STC
             {
                 State8080->cc.cy = 1;
             }
             break;
-        // TODO 0x38
+        case 0x38: UnimplementedInstruction(State8080); break;
         case 0x39: // DAD SP
             {
                 uint32_t hl = (uint32_t) State8080->h << 8 | (uint32_t) State8080->l;
@@ -300,7 +362,13 @@ void executeInstruction(State8080* State8080){
             }
             break;
         
-        // TODO 0x3a
+        case 0x3a: // LDA adr
+            {
+                uint16_t offset = (opcode[2] << 8) | (opcode[1]);
+                State8080->a = State8080->memory[offset];
+                State8080->pc += 2;
+            }
+            break;
         case 0x3b: // DCX SP
             {
                 State8080->sp--;
@@ -324,7 +392,10 @@ void executeInstruction(State8080* State8080){
                 State8080->a = answer & 0xff;
             }
             break;
-        // TODO 0x3e
+        case 0x3e: // MVI A,byte
+            State8080->a = opcode[1];
+            State8080->pc++;
+            break;
         case 0x3f: // CMC
             {
                 State8080->cc.cy = !State8080->cc.cy;
@@ -527,7 +598,7 @@ void executeInstruction(State8080* State8080){
             break;
         case 0x76: // HLT
             {
-                return 0; 
+                exit(0);
             }
             break;
         case 0x77: // MOV M,A
@@ -560,11 +631,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->memory[offset];
             }
             break;
-        case 0x7f: // MOV A,A
-            // No operation
-            break;
-        // Begin Arithmetic Instructions
-        // Addition 
+        case 0x7f: UnimplementedInstruction(State8080); break;
         case 0x80: // ADD B
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) State8080->b;
@@ -1280,7 +1347,7 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        // TODO 0xcb-0xcb
+        case 0xcb: UnimplementedInstruction(State8080); break;
         case 0xcc: // CZ adr 
             {
                 if(State8080->cc.z == 1){
@@ -1404,7 +1471,7 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        // TODO 0xd9
+        case 0xd9: UnimplementedInstruction(State8080); break;
         case 0xda: // JC ADR
             {
                 if(State8080->cc.cy == 1){
@@ -1432,7 +1499,7 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        // TODO 0xdd 
+        case 0xdd: UnimplementedInstruction(State8080); break;
         case 0xde: // SBI byte
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) opcode[1] - (uint16_t) State8080->cc.cy;
@@ -1552,7 +1619,17 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        /* TODO 0xeb*/
+        case 0xeb: // XCHG 
+            {
+                uint8_t temp;
+                temp = State8080->d;
+                State8080->d = State8080->h;
+                State8080->h = temp;
+                temp = State8080->e;
+                State8080->e = State8080->l;
+                State8080->l = temp;
+            }
+            break;
         case 0xec: // CPE ADR 
             {
                 if(State8080->cc.p == 1){
@@ -1566,7 +1643,7 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        // TODO 0xed
+        case 0xed: UnimplementedInstruction(State8080); break;
         case 0xee: // XRI D8
             {
                 State8080->a = State8080->a ^ opcode[1];
@@ -1710,7 +1787,7 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        // TODO 0xfd
+        case 0xfd: UnimplementedInstruction(State8080); break;
         case 0xfe: // CPI D8
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) opcode[1];
@@ -1735,32 +1812,38 @@ void executeInstruction(State8080* State8080){
     
 
 void Emulate8080Op(State8080* state) {
+    // disassemble the next instruction 
+    Disassemble8080Op(state->memory, state->pc);
+    state->pc++; 
     // execute instruction 
     executeInstruction(state);
-    // disassemble the next instruction 
-    state->pc += Disassemble8080Op(state->memory, state->pc);
+    printf("\t");
+	printf("%c", state->cc.z ? 'z' : '.');
+	printf("%c", state->cc.s ? 's' : '.');
+	printf("%c", state->cc.p ? 'p' : '.');
+	printf("%c", state->cc.cy ? 'c' : '.');
+	printf("%c  ", state->cc.ac ? 'a' : '.');
+	printf("A $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n", state->a, state->b, state->c,
+				state->d, state->e, state->h, state->l, state->sp);
 }
 
 
 int main (int argc, char** argv) {
+    State8080* newState = (State8080*)malloc(sizeof(State8080));
+    newState->memory = malloc(0x10000);  //16K
+    
+    // Read file into memory 
     FILE *f = fopen(argv[1], "rb");
     if (f==NULL) {
         printf("error: Couldn't open %s\n", argv[1]);
         exit(1);
     }
-    // Get the file size and read it into a memory buffer
     fseek(f, 0L, SEEK_END);
     int fsize = ftell(f);
     fseek(f, 0L, SEEK_SET);
-
-    unsigned char *buffer = malloc(fsize);
+    unsigned char *buffer = &newState->memory[0];
     fread(buffer, fsize, 1, f);
     fclose(f);
-
-    State8080* newState = (State8080*)malloc(sizeof(State8080));
-    newState->memory = malloc(0x10000);  //16K
-    memcpy(newState->memory, buffer, fsize);
-    newState->pc = 0;
     
 
     while (newState->pc < fsize) {
