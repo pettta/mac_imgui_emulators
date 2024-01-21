@@ -525,7 +525,11 @@ void executeInstruction(State8080* State8080){
                 State8080->memory[offset] = State8080->l;
             }
             break;
-        // TODO case 0x76 special case HLT
+        case 0x76: // HLT
+            {
+                return 0; 
+            }
+            break;
         case 0x77: // MOV M,A
             {
                 uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
@@ -1327,7 +1331,11 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        /* TODO 0xd0-d3*/
+        case 0xd3: // OUT byte TODO COME BACK TO IMPL LATER 
+            {
+                State8080->pc++;
+            }
+            break;
         case 0xd4: // CNC adr 
             {
                 if(State8080->cc.cy == 0){
@@ -1382,7 +1390,11 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        /* TODO 0xdb*/
+        case 0xdb: // IN byte TODO come back later to implement fully 
+            {
+                State8080->pc++;
+            }
+            break;
         case 0xdc: // CC ADR
             {
                 if(State8080->cc.cy == 1){
@@ -1548,7 +1560,12 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        /* TODO 0xf3 */
+        case 0xf3: // DI 
+            {
+                State8080->int_enable = 0;
+                State8080->pc++;
+            }
+            break;
         case 0xf4: // CP ADR 
             {
                 if(State8080->cc.s == 0){
@@ -1602,7 +1619,12 @@ void executeInstruction(State8080* State8080){
                 }
             }
             break;
-        /* TODO 0xfb*/
+        case 0xfb: // EI 
+            {
+                State8080->int_enable = 1;
+                State8080->pc++;
+            }
+            break;
         case 0xfc: // CM ADR 
             {
                 if(State8080->cc.s == 1){
