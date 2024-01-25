@@ -3,13 +3,26 @@
 #include <string.h>
 #include "disassembler.h"
 
-u_int8_t parity(int x) {
-    int parity = 0;
-    while (x) {
-        parity = !parity;
-        x = x & (x-1);
-    }
-    return parity;
+// u_int8_t parity(int x) {
+//     int parity = 0;
+//     while (x) {
+//         parity = !parity;
+//         x = x & (x-1);
+//     }
+//     return parity;
+// }
+
+int parity(int x, int size)
+{
+	int i;
+	int p = 0;
+	x = (x & ((1<<size)-1));
+	for (i=0; i<size; i++)
+	{
+		if (x & 0x1) p++;
+		x = x >> 1;
+	}
+	return (0 == (p & 0x1));
 }
 
 void UnimplementedInstruction(State8080* state) {
@@ -25,8 +38,7 @@ void UnimplementedInstruction(State8080* state) {
 // For example, all add instructions have some common add, then you build 
 // on that for the variants with flags, this is true of other things like CALL, RET, etc 
 
-void executeInstruction(State8080* State8080){
-    unsigned char *opcode = &State8080->memory[State8080->pc];
+void executeInstruction(State8080* State8080, unsigned char* opcode) {
     switch(*opcode) {
         case 0x00: break; // NOP 
         case 0x01: // LXI B,word
@@ -48,7 +60,7 @@ void executeInstruction(State8080* State8080){
                 uint16_t answer = (uint16_t) State8080->b + (uint16_t) 1;
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->b = answer & 0xff;
             }
             break;
@@ -57,7 +69,7 @@ void executeInstruction(State8080* State8080){
                 uint16_t answer = (uint16_t) State8080->b - (uint16_t) 1;
                 State8080->cc.z = (answer == 0);
                 State8080->cc.s = ((answer & 0x80) == 0x80);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->b = answer;
             }
             break;
@@ -96,17 +108,17 @@ void executeInstruction(State8080* State8080){
                 uint16_t answer = (uint16_t) State8080->c + (uint16_t) 1;
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->c = answer & 0xff;
             }
             break;
         case 0x0d: // DCR C
             {
                 uint16_t answer = (uint16_t) State8080->c - (uint16_t) 1;
-                State8080->cc.z = ((answer & 0xff) == 0);
-                State8080->cc.s = ((answer & 0x80) != 0);
-                State8080->cc.p = parity(answer&0xff);
-                State8080->c = answer & 0xff;
+                State8080->cc.z = (answer == 0);
+                State8080->cc.s = ((answer & 0x80) == 0x80);
+                State8080->cc.p = parity(answer, 8);
+                State8080->c = answer;
             }
             break;
         case 0x0e: // MVI C,byte
@@ -140,17 +152,17 @@ void executeInstruction(State8080* State8080){
                 uint16_t answer = (uint16_t) State8080->d + (uint16_t) 1;
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->d = answer & 0xff;
             }
             break;
         case 0x15: // DCR D
             {
                 uint16_t answer = (uint16_t) State8080->d - (uint16_t) 1;
-                State8080->cc.z = ((answer & 0xff) == 0);
-                State8080->cc.s = ((answer & 0x80) != 0);
-                State8080->cc.p = parity(answer&0xff);
-                State8080->d = answer & 0xff;
+                State8080->cc.z = (answer == 0);
+                State8080->cc.s = ((answer & 0x80) == 0x80);
+                State8080->cc.p = parity(answer, 8);
+                State8080->d = answer;
             }
             break;
         case 0x16: // MVI D,byte
@@ -194,17 +206,17 @@ void executeInstruction(State8080* State8080){
                 uint16_t answer = (uint16_t) State8080->e + (uint16_t) 1;
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->e = answer & 0xff;
             }
             break;
         case 0x1d: // DCR E
             {
                 uint16_t answer = (uint16_t) State8080->e - (uint16_t) 1;
-                State8080->cc.z = ((answer & 0xff) == 0);
-                State8080->cc.s = ((answer & 0x80) != 0);
-                State8080->cc.p = parity(answer&0xff);
-                State8080->e = answer & 0xff;
+                State8080->cc.z = (answer == 0);
+                State8080->cc.s = ((answer & 0x80) == 0x80);
+                State8080->cc.p = parity(answer, 8);
+                State8080->e = answer;
             }
             break;
         case 0x1e: // MVI E,byte
@@ -238,17 +250,17 @@ void executeInstruction(State8080* State8080){
                 uint16_t answer = (uint16_t) State8080->h + (uint16_t) 1;
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->h = answer & 0xff;
             }
             break;
         case 0x25: // DCR H
             {
                 uint16_t answer = (uint16_t) State8080->h - (uint16_t) 1;
-                State8080->cc.z = ((answer & 0xff) == 0); 
-                State8080->cc.s = ((answer & 0x80) != 0); 
-                State8080->cc.p = parity(answer&0xff);
-                State8080->h = answer & 0xff;
+                State8080->cc.z = (answer == 0); 
+                State8080->cc.s = ((answer & 0x80) == 0x80); 
+                State8080->cc.p = parity(answer, 8);
+                State8080->h = answer;
             }
             break;
         case 0x26: // MVI H,byte
@@ -280,17 +292,17 @@ void executeInstruction(State8080* State8080){
                 uint16_t answer = (uint16_t) State8080->l + (uint16_t) 1;
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->l = answer & 0xff;
             }
             break;
         case 0x2d: // DCR L
             {
                 uint16_t answer = (uint16_t) State8080->l - (uint16_t) 1;
-                State8080->cc.z = ((answer & 0xff) == 0); 
-                State8080->cc.s = ((answer & 0x80) != 0); 
-                State8080->cc.p = parity(answer&0xff);
-                State8080->l = answer & 0xff;
+                State8080->cc.z = (answer == 0); 
+                State8080->cc.s = ((answer & 0x80) == 0x80); 
+                State8080->cc.p = parity(answer, 8);
+                State8080->l = answer;
             }
             break;
         case 0x2e: // MVI L,byte
@@ -325,7 +337,7 @@ void executeInstruction(State8080* State8080){
                 uint16_t answer = (uint16_t) State8080->memory[offset] + (uint16_t) 1;
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->memory[offset] = answer & 0xff;
             }
             break;
@@ -333,10 +345,10 @@ void executeInstruction(State8080* State8080){
             {
                 uint16_t offset = (uint16_t) (State8080->h << 8) | (uint16_t) (State8080->l);
                 uint16_t answer = (uint16_t) State8080->memory[offset] - (uint16_t) 1;
-                State8080->cc.z = ((answer & 0xff) == 0); 
-                State8080->cc.s = ((answer & 0x80) != 0); 
-                State8080->cc.p = parity(answer&0xff);
-                State8080->memory[offset] = answer & 0xff;
+                State8080->cc.z = (answer == 0); 
+                State8080->cc.s = ((answer & 0x80) == 0x80); 
+                State8080->cc.p = parity(answer, 8);
+                State8080->memory[offset] = answer;
             }
             break;
         case 0x36: // MVI M,byte
@@ -379,17 +391,17 @@ void executeInstruction(State8080* State8080){
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) 1;
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
         case 0x3d: // DCR A
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) 1;
-                State8080->cc.z = ((answer & 0xff) == 0); 
-                State8080->cc.s = ((answer & 0x80) != 0); 
-                State8080->cc.p = parity(answer&0xff);
-                State8080->a = answer & 0xff;
+                State8080->cc.z = (answer == 0); 
+                State8080->cc.s = ((answer & 0x80) == 0x80); 
+                State8080->cc.p = parity(answer, 8);
+                State8080->a = answer;
             }
             break;
         case 0x3e: // MVI A,byte
@@ -642,7 +654,7 @@ void executeInstruction(State8080* State8080){
                 // Carry flag : set if answer is greater than 8 bits
                 State8080->cc.cy = (answer > 0xff);
                 // parity flag: set if parity is even via subroutine 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -652,7 +664,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
                 State8080->cc.cy = (answer > 0xff);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -662,7 +674,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
                 State8080->cc.cy = (answer > 0xff);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -672,7 +684,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
                 State8080->cc.cy = (answer > 0xff);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -682,7 +694,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
                 State8080->cc.cy = (answer > 0xff);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -692,7 +704,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
                 State8080->cc.cy = (answer > 0xff);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -703,7 +715,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
                 State8080->cc.cy = (answer > 0xff);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -713,7 +725,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
                 State8080->cc.cy = (answer > 0xff);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -724,7 +736,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -734,7 +746,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -744,7 +756,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -754,7 +766,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -764,7 +776,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -774,7 +786,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -785,7 +797,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -795,7 +807,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -806,7 +818,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0);  
                 State8080->cc.cy = (answer > 0xff);  
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -816,7 +828,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);  
                 State8080->cc.s = ((answer & 0x80) != 0);  
                 State8080->cc.cy = (answer > 0xff);  
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -826,7 +838,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);  
                 State8080->cc.s = ((answer & 0x80) != 0);  
                 State8080->cc.cy = (answer > 0xff);  
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -836,7 +848,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);  
                 State8080->cc.s = ((answer & 0x80) != 0);  
                 State8080->cc.cy = (answer > 0xff);  
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -846,7 +858,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);  
                 State8080->cc.s = ((answer & 0x80) != 0);  
                 State8080->cc.cy = (answer > 0xff);  
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -856,7 +868,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);  
                 State8080->cc.s = ((answer & 0x80) != 0);  
                 State8080->cc.cy = (answer > 0xff);  
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -867,7 +879,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);  
                 State8080->cc.s = ((answer & 0x80) != 0);  
                 State8080->cc.cy = (answer > 0xff);  
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -877,7 +889,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);  
                 State8080->cc.s = ((answer & 0x80) != 0);  
                 State8080->cc.cy = (answer > 0xff);  
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -888,7 +900,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);  
                 State8080->cc.s = ((answer & 0x80) != 0);   
                 State8080->cc.cy = (answer > 0xff);   
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -898,7 +910,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);   
                 State8080->cc.s = ((answer & 0x80) != 0);   
                 State8080->cc.cy = (answer > 0xff);   
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -908,7 +920,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);   
                 State8080->cc.s = ((answer & 0x80) != 0);   
                 State8080->cc.cy = (answer > 0xff);   
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -918,7 +930,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);   
                 State8080->cc.s = ((answer & 0x80) != 0);   
                 State8080->cc.cy = (answer > 0xff);   
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -928,7 +940,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);   
                 State8080->cc.s = ((answer & 0x80) != 0);   
                 State8080->cc.cy = (answer > 0xff);   
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -938,7 +950,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);   
                 State8080->cc.s = ((answer & 0x80) != 0);   
                 State8080->cc.cy = (answer > 0xff);   
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -949,7 +961,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);   
                 State8080->cc.s = ((answer & 0x80) != 0);   
                 State8080->cc.cy = (answer > 0xff);   
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -959,7 +971,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);   
                 State8080->cc.s = ((answer & 0x80) != 0);   
                 State8080->cc.cy = (answer > 0xff);   
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
             }
             break;
@@ -968,7 +980,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a & State8080->b;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -977,7 +989,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a & State8080->c;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -986,7 +998,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a & State8080->d;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -995,7 +1007,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a & State8080->e;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1004,7 +1016,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a & State8080->h;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1013,7 +1025,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a & State8080->l;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1023,7 +1035,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a & State8080->memory[offset];
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1032,7 +1044,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a & State8080->a;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1041,7 +1053,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a ^ State8080->b;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1050,7 +1062,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a ^ State8080->c;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1059,7 +1071,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a ^ State8080->d;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1068,7 +1080,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a ^ State8080->e;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1077,7 +1089,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a ^ State8080->h;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1086,7 +1098,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a ^ State8080->l;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1096,7 +1108,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a ^ State8080->memory[offset];
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1105,7 +1117,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a ^ State8080->a;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1114,7 +1126,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a | State8080->b;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1123,7 +1135,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a | State8080->c;
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
             }
             break;
@@ -1132,7 +1144,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a | State8080->d;
                 State8080->cc.z = (State8080->a == 0); 
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0; 
             }
             break;
@@ -1141,7 +1153,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a | State8080->e;
                 State8080->cc.z = (State8080->a == 0); 
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0; 
             }
             break;
@@ -1150,7 +1162,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a | State8080->h;
                 State8080->cc.z = (State8080->a == 0); 
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0; 
             }
             break;
@@ -1159,7 +1171,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a | State8080->l;
                 State8080->cc.z = (State8080->a == 0); 
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0; 
             }
             break;
@@ -1169,7 +1181,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a | State8080->memory[offset];
                 State8080->cc.z = (State8080->a == 0); 
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0; 
             }
             break;
@@ -1178,7 +1190,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a | State8080->a;
                 State8080->cc.z = (State8080->a == 0); 
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0; 
             }
             break;
@@ -1188,7 +1200,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
             }
             break;
         case 0xb9: // CMP C
@@ -1197,7 +1209,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
             }
             break;
         case 0xba: // CMP D
@@ -1206,7 +1218,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
             }
             break;
         case 0xbb: // CMP E
@@ -1215,7 +1227,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
             }
             break;
         case 0xbc: // CMP H
@@ -1224,7 +1236,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
             }
             break;
         case 0xbd: // CMP L
@@ -1233,7 +1245,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
             }
             break;
         case 0xbe: // CMP M
@@ -1243,7 +1255,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
             }
             break;
         case 0xbf: // CMP A
@@ -1252,7 +1264,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0); 
                 State8080->cc.s = ((answer & 0x80) != 0); 
                 State8080->cc.cy = (answer > 0xff); 
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
             }
             break;
         case 0xc0: // RNZ
@@ -1310,7 +1322,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);   
                 State8080->cc.s = ((answer & 0x80) != 0);   
                 State8080->cc.cy = (answer > 0xff);   
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
@@ -1376,7 +1388,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);   
                 State8080->cc.s = ((answer & 0x80) != 0);   
                 State8080->cc.cy = (answer > 0xff);   
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
@@ -1447,7 +1459,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
                 State8080->cc.cy = (answer > 0xff);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
@@ -1506,7 +1518,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = ((answer & 0xff) == 0);
                 State8080->cc.s = ((answer & 0x80) != 0);
                 State8080->cc.cy = (answer > 0xff);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->a = answer & 0xff;
                 State8080->pc++;
             }
@@ -1582,7 +1594,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a & opcode[1];
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->pc++;
             }
             break;
@@ -1649,7 +1661,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a ^ opcode[1];
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
                 State8080->pc++;
             }
@@ -1730,7 +1742,7 @@ void executeInstruction(State8080* State8080){
                 State8080->a = State8080->a | opcode[1];
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0);
-                State8080->cc.p = parity(State8080->a);
+                State8080->cc.p = parity(State8080->a, 8);
                 State8080->cc.cy = 0;
                 State8080->pc++;
             }
@@ -1794,7 +1806,7 @@ void executeInstruction(State8080* State8080){
                 State8080->cc.z = (answer == 0);
                 State8080->cc.s = ((answer & 0x80) == 0x80);
                 State8080->cc.cy = (State8080->a < opcode[1]);
-                State8080->cc.p = parity(answer&0xff);
+                State8080->cc.p = parity(answer, 8);
                 State8080->pc++;
             }
             break;
@@ -1811,13 +1823,14 @@ void executeInstruction(State8080* State8080){
 }
     
 
-void Emulate8080Op(State8080* state) {
+int Emulate8080Op(State8080* state) {
     // disassemble the next instruction 
+    unsigned char *opcode = &state->memory[state->pc];
     Disassemble8080Op(state->memory, state->pc);
-    state->pc++; 
+    state->pc++;
     // execute instruction 
-    executeInstruction(state);
-    printf("\t");
+    executeInstruction(state, opcode);
+     
 	printf("%c", state->cc.z ? 'z' : '.');
 	printf("%c", state->cc.s ? 's' : '.');
 	printf("%c", state->cc.p ? 'p' : '.');
@@ -1825,13 +1838,14 @@ void Emulate8080Op(State8080* state) {
 	printf("%c  ", state->cc.ac ? 'a' : '.');
 	printf("A $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n", state->a, state->b, state->c,
 				state->d, state->e, state->h, state->l, state->sp);
+    return 0;
 }
 
 
 int main (int argc, char** argv) {
-    State8080* newState = (State8080*)malloc(sizeof(State8080));
+    State8080* newState = calloc(1, sizeof(State8080));
     newState->memory = malloc(0x10000);  //16K
-    
+    int done = 0;
     // Read file into memory 
     FILE *f = fopen(argv[1], "rb");
     if (f==NULL) {
@@ -1846,8 +1860,8 @@ int main (int argc, char** argv) {
     fclose(f);
     
 
-    while (newState->pc < fsize) {
-        Emulate8080Op(newState);
+    while (done == 0) {
+        done = Emulate8080Op(newState);
     }
 
     return 0;
