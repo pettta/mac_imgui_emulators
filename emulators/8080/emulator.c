@@ -81,12 +81,12 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
         case 0x08: UnimplementedInstruction(State8080); break;
         case 0x09: // DAD B
             {
-                uint32_t hl = (uint32_t) State8080->h << 8 | (uint32_t) State8080->l;
-                uint32_t bc = (uint32_t) State8080->b << 8 | (uint32_t) State8080->c;
+                uint32_t hl = (uint32_t) State8080->h << 8 | State8080->l;
+                uint32_t bc = (uint32_t) State8080->b << 8 | State8080->c;
                 uint32_t answer = hl + bc;
                 State8080->h = (answer & 0xff00) >> 8;
                 State8080->l = (answer & 0xff);
-                State8080->cc.cy = (answer > 0xffff);
+                State8080->cc.cy = ((answer & 0xffff0000) > 0);
             }
             break;
         case 0x0a: // LDAX B
@@ -179,12 +179,12 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
         case 0x18: UnimplementedInstruction(State8080); break;
         case 0x19: // DAD D
             {
-                uint32_t hl = (uint32_t) State8080->h << 8 | (uint32_t) State8080->l;
-                uint32_t de = (uint32_t) State8080->d << 8 | (uint32_t) State8080->e;
+                uint32_t hl = (uint32_t) State8080->h << 8 | State8080->l;
+                uint32_t de = (uint32_t) State8080->d << 8 | State8080->e;
                 uint32_t answer = hl + de;
                 State8080->h = (answer & 0xff00) >> 8;
                 State8080->l = (answer & 0xff);
-                State8080->cc.cy = (answer > 0xffff);
+                State8080->cc.cy = ((answer & 0xffff0000) != 0);
             }
             break;
         case 0x1a: // LDAX D
@@ -271,11 +271,11 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
         case 0x28: UnimplementedInstruction(State8080); break;
         case 0x29: // DAD H
             {
-                uint32_t hl = (uint32_t) State8080->h << 8 | (uint32_t) State8080->l;
+                uint32_t hl = (uint32_t) State8080->h << 8 | State8080->l;
                 uint32_t answer = hl + hl;
                 State8080->h = (answer & 0xff00) >> 8;
                 State8080->l = (answer & 0xff);
-                State8080->cc.cy = (answer > 0xffff);
+                State8080->cc.cy = ((answer & 0xffff0000) != 0);
             }
             break;
         case 0x2a: UnimplementedInstruction(State8080); break;
@@ -353,7 +353,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             break;
         case 0x36: // MVI M,byte
             {
-                uint16_t offset = (uint16_t) (State8080->h << 8) | (uint16_t) (State8080->l);
+                uint16_t offset = (uint16_t) (State8080->h << 8) | (State8080->l);
                 State8080->memory[offset] = opcode[1];
                 State8080->pc++;
             }
@@ -430,7 +430,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             break;
         case 0x46: // MOV B,M
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->b = State8080->memory[offset];
             }
             break;
@@ -457,7 +457,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             break;
         case 0x4e: // MOV C,M
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->c = State8080->memory[offset];
             }
             break;
@@ -484,7 +484,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             break;
         case 0x56: // MOV D,M
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->d = State8080->memory[offset];
             }
             break;
@@ -511,7 +511,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             break;
         case 0x5e: // MOV E,M
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->e = State8080->memory[offset];
             }
             break;
@@ -538,7 +538,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             break;
         case 0x66: // MOV H,M
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->h = State8080->memory[offset];
             }
             break;
@@ -565,7 +565,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             break;
         case 0x6e: // MOV L,M
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->l = State8080->memory[offset];
             }
             break;
@@ -574,37 +574,37 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             break;
         case 0x70: // MOV M,B
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->memory[offset] = State8080->b;
             }
             break;
         case 0x71: // MOV M,C
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->memory[offset] = State8080->c;
             }
             break;
         case 0x72: // MOV M,D
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->memory[offset] = State8080->d;
             }
             break; 
         case 0x73: // MOV M,E
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->memory[offset] = State8080->e;
             }
             break; 
         case 0x74: // MOV M,H
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->memory[offset] = State8080->h;
             }
             break;
         case 0x75: // MOV M,L
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (uint16_t)(State8080->l);
                 State8080->memory[offset] = State8080->l;
             }
             break;
@@ -615,7 +615,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             break;
         case 0x77: // MOV M,A
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->memory[offset] = State8080->a;
             }
             break;
@@ -639,7 +639,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             break;
         case 0x7e: // MOV A,M
             {
-                uint16_t offset = (uint16_t)(State8080->h << 8) | (uint16_t)(State8080->l);
+                uint16_t offset = (State8080->h << 8) | (State8080->l);
                 State8080->a = State8080->memory[offset];
             }
             break;
@@ -1043,9 +1043,9 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             {
                 State8080->a = State8080->a & State8080->a;
                 State8080->cc.z = (State8080->a == 0);
-                State8080->cc.s = ((State8080->a & 0x80) != 0);
+                State8080->cc.s = ((State8080->a & 0x80) == 0x80);
                 State8080->cc.p = parity(State8080->a, 8);
-                State8080->cc.cy = 0;
+                State8080->cc.cy =  State8080->cc.ac = 0;
             }
             break;
         case 0xa8: // XRA B
@@ -1118,7 +1118,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
                 State8080->cc.z = (State8080->a == 0);
                 State8080->cc.s = ((State8080->a & 0x80) != 0); 
                 State8080->cc.p = parity(State8080->a, 8);
-                State8080->cc.cy = 0;
+                State8080->cc.cy = State8080->cc.ac = 0;
             }
             break;
         case 0xb0: // ORA B
@@ -1320,10 +1320,10 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             {
                 uint16_t answer = (uint16_t) State8080->a + (uint16_t) opcode[1];
                 State8080->cc.z = ((answer & 0xff) == 0);   
-                State8080->cc.s = ((answer & 0x80) != 0);   
+                State8080->cc.s = ((answer & 0x80) == 0x80);   
                 State8080->cc.cy = (answer > 0xff);   
-                State8080->cc.p = parity(answer, 8);
-                State8080->a = answer & 0xff;
+                State8080->cc.p = parity((answer&0xff), 8);
+                State8080->a = (uint8_t) answer;
                 State8080->pc++;
             }
             break;
@@ -1592,8 +1592,9 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
         case 0xe6: // ANI byte; note might have to cast opcode to uint16, if theres an error 
             {
                 State8080->a = State8080->a & opcode[1];
+                State8080->cc.cy = State8080->cc.ac = 0;
                 State8080->cc.z = (State8080->a == 0);
-                State8080->cc.s = ((State8080->a & 0x80) != 0);
+                State8080->cc.s = ((State8080->a & 0x80) == 0x80);
                 State8080->cc.p = parity(State8080->a, 8);
                 State8080->pc++;
             }
@@ -1633,13 +1634,12 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             break;
         case 0xeb: // XCHG 
             {
-                uint8_t temp;
-                temp = State8080->d;
+                uint8_t temp1 = State8080->d;
+                uint8_t temp2 = State8080->e;
                 State8080->d = State8080->h;
-                State8080->h = temp;
-                temp = State8080->e;
                 State8080->e = State8080->l;
-                State8080->l = temp;
+                State8080->h = temp1;
+                State8080->l = temp2;
             }
             break;
         case 0xec: // CPE ADR 
@@ -1783,7 +1783,6 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
         case 0xfb: // EI 
             {
                 State8080->int_enable = 1;
-                State8080->pc++;
             }
             break;
         case 0xfc: // CM ADR 
@@ -1830,7 +1829,7 @@ int Emulate8080Op(State8080* state) {
     state->pc++;
     // execute instruction 
     executeInstruction(state, opcode);
-     
+    printf("\t");
 	printf("%c", state->cc.z ? 'z' : '.');
 	printf("%c", state->cc.s ? 's' : '.');
 	printf("%c", state->cc.p ? 'p' : '.');
@@ -1846,6 +1845,7 @@ int main (int argc, char** argv) {
     State8080* newState = calloc(1, sizeof(State8080));
     newState->memory = malloc(0x10000);  //16K
     int done = 0;
+
     // Read file into memory 
     FILE *f = fopen(argv[1], "rb");
     if (f==NULL) {
@@ -1863,6 +1863,5 @@ int main (int argc, char** argv) {
     while (done == 0) {
         done = Emulate8080Op(newState);
     }
-
     return 0;
 }

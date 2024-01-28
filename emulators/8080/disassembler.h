@@ -11,6 +11,7 @@ typedef struct ConditionCodes {
     uint8_t pad:3;
 } ConditionCodes;
 
+ConditionCodes CC_ZSPAC = {1, 1, 1, 0, 1 };
 
 typedef struct State8080 {
     uint8_t a;
