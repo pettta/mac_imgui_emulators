@@ -3,14 +3,7 @@
 #include <string.h>
 #include "disassembler.h"
 
-// u_int8_t parity(int x) {
-//     int parity = 0;
-//     while (x) {
-//         parity = !parity;
-//         x = x & (x-1);
-//     }
-//     return parity;
-// }
+// TODO refactor before going forward 
 
 int parity(int x, int size)
 {
@@ -33,6 +26,54 @@ void UnimplementedInstruction(State8080* state) {
     printf("\n");
     exit(1);
 }
+
+// void generateInterrupt(State8080* state, int interrupt_num) {
+//     // perform the stack push 
+//     state->memory[state->sp - 1] = (state->pc >> 8) & 0xff;
+//     state->memory[state->sp - 2] = (state->pc & 0xff);
+//     state->sp = state->sp - 2;
+//     state->pc = 8 * interrupt_num;
+//     state->int_enable = 0;
+// }
+
+// TODO - this is a hack, move it to correct location 
+uint8_t machineIN(State8080* state, uint8_t port) {
+    uint8_t out; 
+    uint16_t offset; 
+    switch(port) {
+        case 1:
+            out = state->ports.read1;
+            break;
+        case 2:
+            out = state->ports.read2;
+            break;
+        case 3: 
+            offset = (state->ports.shift1 << 8) | (state->ports.shift0);
+            out = (offset >> (8 - state->ports.shift_offset)) & 0xff;
+            break; 
+        default:
+            UnimplementedInstruction(state);
+            exit(1);
+    }
+    return out;
+}
+
+// TODO - this is a hack, move it to correct location
+void machineOUT(State8080* state, uint8_t port, uint8_t value) {
+    switch(port) {
+        case 2:
+            state->ports.shift_offset = value & 0x7;
+            break;
+        case 4:
+            state->ports.shift0 = state->ports.shift1;
+            state->ports.shift1 = value;
+            break;
+        default:
+            UnimplementedInstruction(state);
+            exit(1);
+    }
+}
+
 // TODO at some point pull arithmetic common functionalitys into functions
 // that take state and answer as params 
 // For example, all add instructions have some common add, then you build 
@@ -1451,6 +1492,8 @@ void executeInstruction(State8080* State8080, unsigned char* opcode, int CPU_TES
             break;
         case 0xd3: // OUT byte TODO COME BACK TO IMPL LATER 
             {
+                uint8_t port = opcode[1];
+                machineOUT(State8080, port, State8080->a);
                 State8080->pc++;
             }
             break;
@@ -1516,6 +1559,8 @@ void executeInstruction(State8080* State8080, unsigned char* opcode, int CPU_TES
             break;
         case 0xdb: // IN byte TODO come back later to implement fully 
             {
+                uint8_t port = opcode[1];
+                State8080->a = machineIN(State8080, port);
                 State8080->pc++;
             }
             break;
@@ -1903,6 +1948,8 @@ int main (int argc, char** argv) {
         CPU_TEST = 0;
     }
 
+    // TODO some keyboard interaction stuff 
+    // TODO some graphics stuff
     while (done == 0) {
         done = Emulate8080Op(newState, CPU_TEST);
     }
