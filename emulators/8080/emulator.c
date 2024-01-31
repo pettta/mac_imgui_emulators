@@ -38,7 +38,7 @@ void UnimplementedInstruction(State8080* state) {
 // For example, all add instructions have some common add, then you build 
 // on that for the variants with flags, this is true of other things like CALL, RET, etc 
 
-void executeInstruction(State8080* State8080, unsigned char* opcode) {
+void executeInstruction(State8080* State8080, unsigned char* opcode, int CPU_TEST) {
     switch(*opcode) {
         case 0x00: break; // NOP 
         case 0x01: // LXI B,word
@@ -78,7 +78,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             State8080->pc++;
             break;
         case 0x07: UnimplementedInstruction(State8080); break;
-        case 0x08: UnimplementedInstruction(State8080); break;
+        case 0x08: break; //NOP
         case 0x09: // DAD B
             {
                 uint32_t hl = (uint32_t) State8080->h << 8 | State8080->l;
@@ -132,7 +132,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
                 State8080->cc.cy = (1 == (x&1));
             }
             break;
-        case 0x10: UnimplementedInstruction(State8080); break;
+        case 0x10: break; //NOP
         case 0x11: // LXI D,word
             State8080->d = opcode[2];
             State8080->e = opcode[1];
@@ -176,7 +176,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
                 State8080->cc.cy = (1 == (x&1));
             }
             break;
-        case 0x18: UnimplementedInstruction(State8080); break;
+        case 0x18: break; //NOP
         case 0x19: // DAD D
             {
                 uint32_t hl = (uint32_t) State8080->h << 8 | State8080->l;
@@ -230,7 +230,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
                 State8080->cc.cy = (1 == (x&1));
             }
             break; 
-        case 0x20: UnimplementedInstruction(State8080); break;
+        case 0x20: break; // NOP
         case 0x21: // LXI H,word
             State8080->h = opcode[2];
             State8080->l = opcode[1];
@@ -268,7 +268,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             State8080->pc++;
             break;
         case 0x27: UnimplementedInstruction(State8080); break;
-        case 0x28: UnimplementedInstruction(State8080); break;
+        case 0x28: break; // NOP 
         case 0x29: // DAD H
             {
                 uint32_t hl = (uint32_t) State8080->h << 8 | State8080->l;
@@ -314,7 +314,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
                 State8080->a = ~State8080->a;
             }
             break;
-        case 0x30: UnimplementedInstruction(State8080); break;
+        case 0x30: break; //NOP
         case 0x31: // LXI SP,word
             State8080->sp = (opcode[2] << 8) | opcode[1];
             State8080->pc += 2;
@@ -363,7 +363,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
                 State8080->cc.cy = 1;
             }
             break;
-        case 0x38: UnimplementedInstruction(State8080); break;
+        case 0x38: break; // NOP
         case 0x39: // DAD SP
             {
                 uint32_t hl = (uint32_t) State8080->h << 8 | (uint32_t) State8080->l;
@@ -1359,7 +1359,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
                 }
             }
             break;
-        case 0xcb: UnimplementedInstruction(State8080); break;
+        case 0xcb: break; // NOP 
         case 0xcc: // CZ adr 
             {
                 if(State8080->cc.z == 1){
@@ -1374,7 +1374,28 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
             }
             break;
         case 0xcd: //CALL adr 
-            {
+        if(CPU_TEST == 1){   // Code to test the CPU when running the test file 
+            if (5 ==  ((opcode[2] << 8) | opcode[1]))    
+            {    
+                if (State8080->c == 9)    
+                {    
+                    uint16_t offset = (State8080->d<<8) | (State8080->e);    
+                    char *str = &State8080->memory[offset+3];  //skip the prefix bytes    
+                    while (*str != '$')    
+                        printf("%c", *str++);    
+                    printf("\n");    
+                }    
+                else if (State8080->c == 2)    
+                {    
+                    //saw this in the inspected code, never saw it called    
+                    printf ("print char routine called\n");    
+                }    
+            }    
+            else if (0 ==  ((opcode[2] << 8) | opcode[1]))    
+            {    
+                exit(0);    
+            }       
+        }else {
                 uint16_t ret = State8080->pc + 2;
                 State8080->memory[State8080->sp-1] = (ret >> 8) & 0xff;
                 State8080->memory[State8080->sp-2] = (ret & 0xff);
@@ -1483,7 +1504,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
                 }
             }
             break;
-        case 0xd9: UnimplementedInstruction(State8080); break;
+        case 0xd9: break; // NOP
         case 0xda: // JC ADR
             {
                 if(State8080->cc.cy == 1){
@@ -1511,7 +1532,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
                 }
             }
             break;
-        case 0xdd: UnimplementedInstruction(State8080); break;
+        case 0xdd: break; // NOP
         case 0xde: // SBI byte
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) opcode[1] - (uint16_t) State8080->cc.cy;
@@ -1655,7 +1676,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
                 }
             }
             break;
-        case 0xed: UnimplementedInstruction(State8080); break;
+        case 0xed: break; // NOP 
         case 0xee: // XRI D8
             {
                 State8080->a = State8080->a ^ opcode[1];
@@ -1798,7 +1819,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
                 }
             }
             break;
-        case 0xfd: UnimplementedInstruction(State8080); break;
+        case 0xfd: break; // NOP
         case 0xfe: // CPI D8
             {
                 uint16_t answer = (uint16_t) State8080->a - (uint16_t) opcode[1];
@@ -1822,13 +1843,13 @@ void executeInstruction(State8080* State8080, unsigned char* opcode) {
 }
     
 
-int Emulate8080Op(State8080* state) {
+int Emulate8080Op(State8080* state, int CPU_TEST) {
     // disassemble the next instruction 
     unsigned char *opcode = &state->memory[state->pc];
     Disassemble8080Op(state->memory, state->pc);
     state->pc++;
     // execute instruction 
-    executeInstruction(state, opcode);
+    executeInstruction(state, opcode, CPU_TEST);
     printf("\t");
 	printf("%c", state->cc.z ? 'z' : '.');
 	printf("%c", state->cc.s ? 's' : '.');
@@ -1842,26 +1863,48 @@ int Emulate8080Op(State8080* state) {
 
 
 int main (int argc, char** argv) {
-    State8080* newState = calloc(1, sizeof(State8080));
+    unsigned char *buffer;
+    int CPU_TEST, done, fsize; 
+    State8080* newState; 
+    FILE *f;
+    
+    newState = calloc(1, sizeof(State8080));
     newState->memory = malloc(0x10000);  //16K
-    int done = 0;
+    done = 0;
 
-    // Read file into memory 
-    FILE *f = fopen(argv[1], "rb");
+    // Read file into memory
+    f = fopen(argv[1], "rb");
     if (f==NULL) {
         printf("error: Couldn't open %s\n", argv[1]);
         exit(1);
     }
     fseek(f, 0L, SEEK_END);
-    int fsize = ftell(f);
+    fsize = ftell(f);
     fseek(f, 0L, SEEK_SET);
-    unsigned char *buffer = &newState->memory[0];
-    fread(buffer, fsize, 1, f);
-    fclose(f);
     
+    // Check if running test file 
+    if (strcmp(argv[1], "roms/cpudiag.bin") == 0) {
+        printf("Running tests...\n");
+        buffer = &newState->memory[0x100];
+        fread(buffer, fsize, 1, f);
+        fclose(f);
+        // fix first instruction to be JMP 0x100 
+        newState->memory[0] = 0xc3;
+        newState->memory[1] = 0;
+        newState->memory[2] = 0x01;
+        // fix stack pointer from 0x6ad to 0x7ad
+        newState->memory[368] = 0x7;
+        // make definition so we can modify some asm 
+        CPU_TEST = 1;
+    }else{
+        buffer = &newState->memory[0];
+        fread(buffer, fsize, 1, f);
+        fclose(f);
+        CPU_TEST = 0;
+    }
 
     while (done == 0) {
-        done = Emulate8080Op(newState);
+        done = Emulate8080Op(newState, CPU_TEST);
     }
     return 0;
 }
