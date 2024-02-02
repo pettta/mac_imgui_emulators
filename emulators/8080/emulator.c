@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "disassembler.h"
-
-// TODO refactor before going forward 
+#include "emulator.h"
 
 int parity(int x, int size)
 {
@@ -35,49 +34,6 @@ void UnimplementedInstruction(State8080* state) {
 //     state->pc = 8 * interrupt_num;
 //     state->int_enable = 0;
 // }
-
-// TODO - this is a hack, move it to correct location 
-uint8_t machineIN(State8080* state, uint8_t port) {
-    uint8_t out; 
-    uint16_t offset; 
-    switch(port) {
-        case 1:
-            out = state->ports.read1;
-            break;
-        case 2:
-            out = state->ports.read2;
-            break;
-        case 3: 
-            offset = (state->ports.shift1 << 8) | (state->ports.shift0);
-            out = (offset >> (8 - state->ports.shift_offset)) & 0xff;
-            break; 
-        default:
-            UnimplementedInstruction(state);
-            exit(1);
-    }
-    return out;
-}
-
-// TODO - this is a hack, move it to correct location
-void machineOUT(State8080* state, uint8_t port, uint8_t value) {
-    switch(port) {
-        case 2:
-            state->ports.shift_offset = value & 0x7;
-            break;
-        case 4:
-            state->ports.shift0 = state->ports.shift1;
-            state->ports.shift1 = value;
-            break;
-        default:
-            UnimplementedInstruction(state);
-            exit(1);
-    }
-}
-
-// TODO at some point pull arithmetic common functionalitys into functions
-// that take state and answer as params 
-// For example, all add instructions have some common add, then you build 
-// on that for the variants with flags, this is true of other things like CALL, RET, etc 
 
 void executeInstruction(State8080* State8080, unsigned char* opcode, int CPU_TEST) {
     switch(*opcode) {
@@ -1490,10 +1446,10 @@ void executeInstruction(State8080* State8080, unsigned char* opcode, int CPU_TES
                 }
             }
             break;
-        case 0xd3: // OUT byte TODO COME BACK TO IMPL LATER 
+        case 0xd3: // OUT byte 
             {
                 uint8_t port = opcode[1];
-                machineOUT(State8080, port, State8080->a);
+                machine_out(State8080, port, State8080->a);
                 State8080->pc++;
             }
             break;
@@ -1560,7 +1516,7 @@ void executeInstruction(State8080* State8080, unsigned char* opcode, int CPU_TES
         case 0xdb: // IN byte TODO come back later to implement fully 
             {
                 uint8_t port = opcode[1];
-                State8080->a = machineIN(State8080, port);
+                State8080->a = machine_in(State8080, port);
                 State8080->pc++;
             }
             break;
@@ -1903,55 +1859,5 @@ int Emulate8080Op(State8080* state, int CPU_TEST) {
 	printf("%c  ", state->cc.ac ? 'a' : '.');
 	printf("A $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n", state->a, state->b, state->c,
 				state->d, state->e, state->h, state->l, state->sp);
-    return 0;
-}
-
-
-int main (int argc, char** argv) {
-    unsigned char *buffer;
-    int CPU_TEST, done, fsize; 
-    State8080* newState; 
-    FILE *f;
-    
-    newState = calloc(1, sizeof(State8080));
-    newState->memory = malloc(0x10000);  //16K
-    done = 0;
-
-    // Read file into memory
-    f = fopen(argv[1], "rb");
-    if (f==NULL) {
-        printf("error: Couldn't open %s\n", argv[1]);
-        exit(1);
-    }
-    fseek(f, 0L, SEEK_END);
-    fsize = ftell(f);
-    fseek(f, 0L, SEEK_SET);
-    
-    // Check if running test file 
-    if (strcmp(argv[1], "roms/cpudiag.bin") == 0) {
-        printf("Running tests...\n");
-        buffer = &newState->memory[0x100];
-        fread(buffer, fsize, 1, f);
-        fclose(f);
-        // fix first instruction to be JMP 0x100 
-        newState->memory[0] = 0xc3;
-        newState->memory[1] = 0;
-        newState->memory[2] = 0x01;
-        // fix stack pointer from 0x6ad to 0x7ad
-        newState->memory[368] = 0x7;
-        // make definition so we can modify some asm 
-        CPU_TEST = 1;
-    }else{
-        buffer = &newState->memory[0];
-        fread(buffer, fsize, 1, f);
-        fclose(f);
-        CPU_TEST = 0;
-    }
-
-    // TODO some keyboard interaction stuff 
-    // TODO some graphics stuff
-    while (done == 0) {
-        done = Emulate8080Op(newState, CPU_TEST);
-    }
     return 0;
 }
