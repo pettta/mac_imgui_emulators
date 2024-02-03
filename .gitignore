@@ -9,3 +9,5 @@ imgui_mac_test.o
 imgui_tables.o
 imgui.ini
 .vscode 
+emulators/8080/emu_test
+emulators/8080/emulator

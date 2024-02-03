@@ -8,8 +8,12 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-#include <Metal/Metal.h>
-#include <QuartzCore/QuartzCore.h>
+#define NS_PRIVATE_IMPLEMENTATION
+#define MTL_PRIVATE_IMPLEMENTATION
+#define CA_PRIVATE_IMPLEMENTATION
+#include <Foundation/Foundation.hpp>
+#include <Metal/Metal.hpp>
+#include <QuartzCore/QuartzCore.hpp>
 
 static void glfw3_errorCallback(int error, const char* description)
 {
@@ -49,20 +53,20 @@ int main()
     //glfwMakeContextCurrent(window); TODO REMOVE 
     
     // Initialize Metal
-    id <MTLDevice> device = MTLCreateSystemDefaultDevice();
+    MTL::Device* device = MTL::CreateSystemDefaultDevice();
     id <MTLCommandQueue> commandQueue = [device newCommandQueue];
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplMetal_Init(device);
 
     // Use GLFW to get native window handle
     NSWindow *nsWindow = glfwGetCocoaWindow(window);
-    CAMetalLayer *layer = [CAMetalLayer layer];
-    layer.device = device;
+    CA::MetalLayer* pMetalLayer;
+    pMetalLayer.device = device;
     layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     nsWindow.contentView.layer = layer; 
     nsWindow.contentView.wantsLayer = YES;
 
-    MTLRenderPassDescriptor *renderPassDescriptor = [MTLRenderPassDescriptor new];
+    MTL::RenderPassDescriptor* renderPassDescriptor = MTL::RenderPassDescriptor::new();
 
     // State for rendering
     bool show_demo_window = true;
@@ -78,7 +82,7 @@ int main()
             int width, height; 
             glfwGetFramebufferSize(window, &width, &height);
             layer.drawableSize = CGSizeMake(width, height);
-            id<CAMetalDrawable> drawable = [layer nextDrawable];
+            CA:MetalDrawable* drawable = [layer nextDrawable];
 
             id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
             renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(clear_color[0] * clear_color[3], clear_color[1] * clear_color[3], clear_color[2] * clear_color[3], clear_color[3]);
