@@ -5,7 +5,8 @@
 #define CA_PRIVATE_IMPLEMENTATION
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
-#include <QuartzCore/QuartzCore.hpp>
+#include <AppKit/AppKit.hpp>
+#include <MetalKit/MetalKit.hpp>
 
 #include <imgui.h>
 #include <imgui_impl_metal.h>
@@ -17,17 +18,10 @@ class Renderer
     public:
         Renderer( MTL::Device* pDevice );
         ~Renderer();
-        void buildShaders();
-        void buildBuffers();
 
     private:
         MTL::Device* _pDevice;
         MTL::CommandQueue* _pCommandQueue;
-        MTL::Library* _pShaderLibrary;
-        MTL::RenderPipelineState* _pPSO;
-        MTL::Buffer* _pArgBuffer;
-        MTL::Buffer* _pVertexPositionsBuffer;
-        MTL::Buffer* _pVertexColorsBuffer;
 };
 
 Renderer::Renderer( MTL::Device* pDevice )
@@ -99,6 +93,8 @@ MTK::View* _pMktView ImguiAppDelegate::boot()
     _pMktView->setDelegate(_pRenderer);
     _pWindow->setContentView( _pMktView );
     _pWindow->makeKeyAndOrderFront( nullptr );
+
+    return _pMktView;
 
 }
 
